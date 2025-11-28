@@ -1,0 +1,9 @@
+/vendor/
+.idea/
+.phpunit.result.cache
+composer.lock
+.php-cs-fixer.cache
+.DS_Store
+/node_modules/
+.env
+.phpstorm.meta.php

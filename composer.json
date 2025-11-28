@@ -1,0 +1,35 @@
+{
+  "name": "dorgan/laravel-living-models",
+  "description": "A Laravel enhancement that allows models to define dynamic, calculated, and formula-driven attributes using PHP.",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "illuminate/support": "^10.0|^11.0",
+    "illuminate/database": "^10.0|^11.0",
+    "illuminate/events": "^10.0|^11.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0",
+    "orchestra/testbench": "^8.0|^9.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Dorgan\\LivingModels\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Dorgan\\LivingModels\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "DOrgan\\LivingModels\\Providers\\LivingModelsServiceProvider"
+      ]
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
