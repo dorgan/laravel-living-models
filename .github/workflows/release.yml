@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'          # e.g. v0.1.0, v1.0.0
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # allows manual runs from the UI
+
+jobs:
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+      # You can pin to a specific version if you want
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          extensions: mbstring, json, pdo, pdo_mysql
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run tests
+        run: vendor/bin/phpunit
+
+  release:
+    name: Create Release
+    # Only run this job when we push a tag that looks like v0.1.0
+    needs: tests
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # important so tags are available
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Install dependencies (no dev)
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress
+
+      - name: Create zip archive
+        run: |
+          zip -r laravel-living-models-${GITHUB_REF_NAME}.zip \
+            . \
+            -x ".git/*" \
+               ".github/*" \
+               "vendor/*" \
+               "node_modules/*" \
+               "*.gitignore" \
+               "tests/*" \
+               "phpunit.xml"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.SECRET }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: "Laravel Living Models ${{ github.ref_name }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset (zip)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.SECRET }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./laravel-living-models-${{ github.ref_name }}.zip
+          asset_name: laravel-living-models-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
